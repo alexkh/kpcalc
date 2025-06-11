@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QWidget
-from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont
+from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont, QKeyEvent
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize
 import sys
 import fragments
@@ -8,8 +8,8 @@ class Canvas(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.mode = 1 # 0 for scientific, 1 for hex
-        self.mod = 1 # active modifier: 1. 2+ 3- 4* 5/
+        self.mode = 0 # 0 for scientific, 1 for hex
+        self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
 
         self.aspect_ratio = 642 / 922
         self.setMouseTracking(True)
@@ -69,6 +69,47 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, e):
         self.mouse_pos = e.pos()
         self.update()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        match event.key():
+            case Qt.Key.Key_Period:
+                self.mod = 1
+                self.update()
+            case Qt.Key.Key_Plus:
+                self.mod = 2
+                self.update()
+            case Qt.Key.Key_Minus:
+                self.mod = 3
+                self.update()
+            case Qt.Key.Key_Asterisk:
+                self.mod = 4
+                self.update()
+            case Qt.Key.Key_Slash:
+                self.mod = 5
+                self.update()
+
+    def keyReleaseEvent(self, event: QKeyEvent):
+        match event.key():
+            case Qt.Key.Key_Period:
+                if self.mod == 1:
+                    self.mod = 0
+                    self.update()
+            case Qt.Key.Key_Plus:
+                if self.mod == 2:
+                    self.mod = 0
+                    self.update()
+            case Qt.Key.Key_Minus:
+                if self.mod == 3:
+                    self.mod = 0
+                    self.update()
+            case Qt.Key.Key_Asterisk:
+                if self.mod == 4:
+                    self.mod = 0
+                    self.update()
+            case Qt.Key.Key_Slash:
+                if self.mod == 5:
+                    self.mod = 0
+                    self.update()
 
     def resizeEvent(self, event):
         # Get the new size
