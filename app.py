@@ -1,3 +1,7 @@
+window_width = 642 # initial window width
+window_height = 922 # initial window height
+window_aspect_ratio = window_width / window_height
+
 from PyQt6.QtWidgets import QApplication, QWidget
 from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont, QKeyEvent
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize
@@ -11,7 +15,7 @@ class Canvas(QWidget):
         self.mode = 0 # 0 for scientific, 1 for hex
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
 
-        self.aspect_ratio = 642 / 922
+        self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
         self.mouse_pos = QPoint(0, 0)
 
@@ -37,8 +41,7 @@ class Canvas(QWidget):
         ]
 
     def draw_bg(self, painter):
-        size = self.size()
-        scale = size.width() / fragments.imw
+        bg_img_scale = self.width() / fragments.imw
         # only if modifier pressed, highlight the possible choices
         if self.mod == 0:
             painter.drawPixmap(0, 0, self.width(), self.height(),
@@ -47,20 +50,27 @@ class Canvas(QWidget):
             painter.drawPixmap(0, 0, self.width(), self.height(),
                 self.bg2_sci if self.mode == 0 else self.bg2_hex)
             painter.drawPixmapFragments(fragments.frag1(self.mode, self.mod,
-                scale), self.bg_sci if self.mode == 0 else self.bg_hex)
+                bg_img_scale), self.bg_sci if self.mode == 0 else self.bg_hex)
 
     def paintEvent(self, event):
+        win_scale = self.width() / window_width
+
         painter = QPainter(self)
         self.draw_bg(painter)
 
-        #painter.setPen(QPen(QColor(255, 0, 0), 2, Qt.PenStyle.SolidLine))
-        #painter.drawRect(50, 50, 100, 80) # x, y, width, height
+        painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.SolidLine))
+        if self.mode == 0: # scientific mode
+            painter.drawRect(int(374 * win_scale), int(530 * win_scale),
+                int(60 * win_scale), int(27 * win_scale)) # x, y, width, height
+        else: # hexadecimal mode
+            painter.drawRect(int(374 * win_scale), int(565 * win_scale),
+                int(60 * win_scale), int(27 * win_scale)) # x, y, width, height
 
         painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.SolidLine))
         painter.setFont(self.font)
         painter.drawStaticText(5, 2, self.static_text)
 
-        painter.setFont(QFont("Arial", 12))
+        painter.setFont(QFont("Arial", int(12 * win_scale)))
         painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
             ", " + str(self.mouse_pos.y()))
 
@@ -71,42 +81,52 @@ class Canvas(QWidget):
         self.update()
 
     def keyPressEvent(self, event: QKeyEvent):
+        if event.isAutoRepeat():
+            return
+        print(event.key(), Qt.Key.Key_F1)
         match event.key():
-            case Qt.Key.Key_Period:
+            case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 self.mod = 1
                 self.update()
-            case Qt.Key.Key_Plus:
+            case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 self.mod = 2
                 self.update()
-            case Qt.Key.Key_Minus:
+            case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 self.mod = 3
                 self.update()
-            case Qt.Key.Key_Asterisk:
+            case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 self.mod = 4
                 self.update()
-            case Qt.Key.Key_Slash:
+            case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
                 self.update()
+            case Qt.Key.Key_6:
+                match self.mod:
+                    case 2:
+                        self.mode = 1 if self.mode == 0 else 0
+                        self.update()
 
     def keyReleaseEvent(self, event: QKeyEvent):
+        if event.isAutoRepeat():
+            return
         match event.key():
-            case Qt.Key.Key_Period:
+            case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 if self.mod == 1:
                     self.mod = 0
                     self.update()
-            case Qt.Key.Key_Plus:
+            case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2:
                     self.mod = 0
                     self.update()
-            case Qt.Key.Key_Minus:
+            case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3:
                     self.mod = 0
                     self.update()
-            case Qt.Key.Key_Asterisk:
+            case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 if self.mod == 4:
                     self.mod = 0
                     self.update()
-            case Qt.Key.Key_Slash:
+            case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 if self.mod == 5:
                     self.mod = 0
                     self.update()
@@ -141,7 +161,8 @@ class Canvas(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setKeyboardInputInterval(0)
     window = Canvas()
-    window.resize(642, 922)
+    window.resize(window_width, window_height)
     window.show()
     sys.exit(app.exec())
