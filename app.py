@@ -13,6 +13,7 @@ class Canvas(QWidget):
         super().__init__()
 
         self.mode = 0 # 0 for scientific, 1 for hex
+        self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
 
         self.aspect_ratio = window_aspect_ratio
@@ -58,6 +59,7 @@ class Canvas(QWidget):
         painter = QPainter(self)
         self.draw_bg(painter)
 
+        # highlight mode: scientific/hexadecimal
         painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.SolidLine))
         if self.mode == 0: # scientific mode
             painter.drawRect(int(374 * win_scale), int(530 * win_scale),
@@ -65,6 +67,16 @@ class Canvas(QWidget):
         else: # hexadecimal mode
             painter.drawRect(int(374 * win_scale), int(565 * win_scale),
                 int(60 * win_scale), int(27 * win_scale)) # x, y, width, height
+
+        # highlight units: radians/degrees
+        if self.mode == 0: # units only apply to scientific mode
+            if self.unit == 0: # radians units
+                painter.drawRect(int(42 * win_scale), int(606 * win_scale),
+                    int(60 * win_scale), int(32 * win_scale))
+            else: # degrees units
+                painter.drawRect(int(42 * win_scale), int(647 * win_scale),
+                    int(60 * win_scale), int(32 * win_scale))
+
 
         painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.SolidLine))
         painter.setFont(self.font)
@@ -108,6 +120,11 @@ class Canvas(QWidget):
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
                 self.update()
+            case Qt.Key.Key_1:
+                match self.mod:
+                    case 4:
+                        self.unit = 1 if self.unit == 0 else 0
+                        self.update()
             case Qt.Key.Key_6:
                 match self.mod:
                     case 1:
