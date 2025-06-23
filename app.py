@@ -83,7 +83,7 @@ class Canvas(QWidget):
     def keyPressEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
             return
-        print(event.key(), Qt.Key.Key_F1)
+        # print(event.key())
         match event.key():
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 self.mod = 1
@@ -102,7 +102,7 @@ class Canvas(QWidget):
                 self.update()
             case Qt.Key.Key_6:
                 match self.mod:
-                    case 2:
+                    case 1:
                         self.mode = 1 if self.mode == 0 else 0
                         self.update()
 
