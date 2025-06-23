@@ -74,6 +74,14 @@ class Canvas(QWidget):
         painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
             ", " + str(self.mouse_pos.y()))
 
+        # draw the big number:
+        big_num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
+            int(625 * win_scale), int(60 * win_scale))
+        # painter.drawRect(big_num_rect)
+        painter.setFont(QFont("Arial", int(40 * win_scale)))
+        painter.drawText(big_num_rect, Qt.AlignmentFlag.AlignRight,
+            "0")
+
         painter.end()
 
     def mouseMoveEvent(self, e):
