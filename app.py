@@ -15,6 +15,7 @@ class Canvas(QWidget):
         self.mode = 0 # 0 for scientific, 1 for hex
         self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
+        self.num_str = "0" # number string
 
         self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
@@ -87,14 +88,25 @@ class Canvas(QWidget):
             ", " + str(self.mouse_pos.y()))
 
         # draw the big number:
-        big_num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
+        num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
             int(625 * win_scale), int(60 * win_scale))
-        # painter.drawRect(big_num_rect)
+        # painter.drawRect(num_rect)
         painter.setFont(QFont("Arial", int(40 * win_scale)))
-        painter.drawText(big_num_rect, Qt.AlignmentFlag.AlignRight,
-            "0")
+        painter.drawText(num_rect, Qt.AlignmentFlag.AlignRight, self.num_str)
 
         painter.end()
+
+    def num_append(self, c):
+        if self.num_str == "0":
+            if c == "0":
+                return
+            self.num_str = c
+            self.update()
+            return
+        else:
+            self.num_str += c
+            self.update()
+            return
 
     def mouseMoveEvent(self, e):
         self.mouse_pos = e.pos()
@@ -120,16 +132,52 @@ class Canvas(QWidget):
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
                 self.update()
+            case Qt.Key.Key_0:
+                match self.mod:
+                    case 0:
+                        self.num_append("0")
             case Qt.Key.Key_1:
                 match self.mod:
+                    case 0:
+                        self.num_append("1");
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
                         self.update()
+            case Qt.Key.Key_2:
+                match self.mod:
+                    case 0:
+                        self.num_append("2");
+            case Qt.Key.Key_3:
+                match self.mod:
+                    case 0:
+                        self.num_append("3");
+            case Qt.Key.Key_4:
+                match self.mod:
+                    case 0:
+                        self.num_append("4");
+            case Qt.Key.Key_5:
+                match self.mod:
+                    case 0:
+                        self.num_append("5");
             case Qt.Key.Key_6:
                 match self.mod:
+                    case 0:
+                        self.num_append("6");
                     case 1:
                         self.mode = 1 if self.mode == 0 else 0
                         self.update()
+            case Qt.Key.Key_7:
+                match self.mod:
+                    case 0:
+                        self.num_append("7");
+            case Qt.Key.Key_8:
+                match self.mod:
+                    case 0:
+                        self.num_append("8");
+            case Qt.Key.Key_9:
+                match self.mod:
+                    case 0:
+                        self.num_append("9");
 
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
