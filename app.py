@@ -8,6 +8,7 @@ from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QEvent, QCor
 import sys
 import fragments
 from asteval import Interpreter
+import re
 
 aeval = Interpreter()
 
@@ -26,6 +27,7 @@ class Canvas(QWidget):
         self.num_appendable = False # set to false after +, -, /, * etc pressed
         self.eval_str = "Welcome to Keypad Calculator!" # evaluation string
         self.eval_appendable = False # set to false after =
+        self.show_equals = False # show = after eval_str
 
         self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
@@ -57,10 +59,12 @@ class Canvas(QWidget):
         if self.eval_str.startswith('W'):
             self.eval_str = ""
 
-    def clear(self): # CLEAR OPERATION when (+ C) is pressed
+    def clear(self): # CLEAR OPERATION when (+ C) is pressed, for example
         self.eval_str = ""
         self.num_str = "0"
-        self.num_appendable = False
+        self.num_appendable = True
+        self.eval_appendable = False
+        self.show_equals = False
 
     def draw_bg(self, painter):
         bg_img_scale = self.width() / fragments.imw
@@ -98,13 +102,14 @@ class Canvas(QWidget):
                 painter.drawRect(int(42 * win_scale), int(647 * win_scale),
                     int(60 * win_scale), int(32 * win_scale))
 
-        painter.setFont(QFont("Arial", int(12 * win_scale)))
-        painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
-            ", " + str(self.mouse_pos.y()) + " : " + self.mouse_key)
+        # painter.setFont(QFont("Arial", int(12 * win_scale)))
+        # painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
+        #    ", " + str(self.mouse_pos.y()) + " : " + self.mouse_key)
 
         # draw the eval string:
         painter.setFont(QFont("Arial", int(30 * win_scale)))
-        painter.drawText(5, 35, self.eval_str)
+        painter.drawText(int(5 * win_scale), int(35 * win_scale), self.eval_str
+            + ("=" if self.show_equals == True else ""))
 
         # draw the big number:
         num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
@@ -124,11 +129,14 @@ class Canvas(QWidget):
             if self.num_str == "0":
                 if c == "0":
                     return
+            if not self.eval_appendable:
+                self.clear()
             self.num_str = c
             self.num_appendable = True
             self.update()
 
     def eval_append(self, s):
+        print("appending " + s + " to eval. eval_appendable=" + str(self.eval_appendable))
         if self.eval_appendable:
             self.eval_str += s
             self.update()
@@ -190,10 +198,13 @@ class Canvas(QWidget):
                 self.mod = 5
                 self.update()
             case Qt.Key.Key_Enter: # ENTER OPERATION
-                self.eval_append(self.num_str)
+                if self.show_equals: # repeated enter press: repeat last op
+                    self.eval_append(re.sub(r'\d+', str(self.num_str), self.eval_str, count = 1))
+                else:
+                    self.eval_append(self.num_str)
                 self.num_str = str(aeval(self.eval_str))
-                print("eval string: '" + self.eval_str + "' = " + self.num_str)
-                self.eval_append("=")
+                print("eval string: '" + self.eval_str + "' = " + self.num_str + " eval_appendable=" + str(self.eval_appendable))
+                self.show_equals = True
                 self.eval_appendable = False
                 self.num_appendable = False
             case Qt.Key.Key_0:
@@ -264,6 +275,7 @@ class Canvas(QWidget):
                     self.eval_append(self.num_str + '+')
                     self.num_appendable = False
                     self.eval_appendable = True
+                    self.show_equals = False
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3:
                     self.mod = 0
