@@ -7,6 +7,9 @@ from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont, QKe
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QEvent, QCoreApplication
 import sys
 import fragments
+from asteval import Interpreter
+
+aeval = Interpreter()
 
 mod_keys = [ Qt.Key.Key_Period, Qt.Key.Key_F1, Qt.Key.Key_Plus, Qt.Key.Key_F2,
     Qt.Key.Key_Minus, Qt.Key.Key_F3, Qt.Key.Key_Asterisk, Qt.Key.Key_F4,
