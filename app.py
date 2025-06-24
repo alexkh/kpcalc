@@ -25,6 +25,7 @@ class Canvas(QWidget):
         self.num_str = "0" # number string
         self.num_appendable = False # set to false after +, -, /, * etc pressed
         self.eval_str = "Welcome to Keypad Calculator!" # evaluation string
+        self.eval_appendable = False # set to false after =
 
         self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
@@ -127,6 +128,14 @@ class Canvas(QWidget):
             self.num_appendable = True
             self.update()
 
+    def eval_append(self, s):
+        if self.eval_appendable:
+            self.eval_str += s
+            self.update()
+        else:
+            self.eval_str = s
+            self.update()
+
     def mouseMoveEvent(self, e):
         self.mouse_pos = e.pos()
         self.update()
@@ -180,13 +189,13 @@ class Canvas(QWidget):
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
                 self.update()
-            case Qt.Key.Key_Enter:
-                self.eval_str += self.num_str
+            case Qt.Key.Key_Enter: # ENTER OPERATION
+                self.eval_append(self.num_str)
                 self.num_str = str(aeval(self.eval_str))
                 print("eval string: '" + self.eval_str + "' = " + self.num_str)
-                self.eval_str += '='
+                self.eval_append("=")
+                self.eval_appendable = False
                 self.num_appendable = False
-                self.update()
             case Qt.Key.Key_0:
                 match self.mod:
                     case 0:
@@ -252,9 +261,9 @@ class Canvas(QWidget):
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2: # PLUS OPERATION
                     self.mod = 0
-                    self.eval_str += self.num_str + '+'
+                    self.eval_append(self.num_str + '+')
                     self.num_appendable = False
-                    self.update()
+                    self.eval_appendable = True
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3:
                     self.mod = 0
