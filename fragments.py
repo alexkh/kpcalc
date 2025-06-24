@@ -89,4 +89,57 @@ def frag1(mode, mod, sc):
         ))
     return fragments
 
+# convert background image coordinates to key value
+def bg_key(pos, sc):
+    x = pos.x() / sc
+    y = pos.y() / sc
+
+    if y < 240.0:
+        return None
+
+    if x < 360.0:
+        if y < 560.0:
+            return None
+        if y < 880.0:
+            return Qt.Key.Key_7
+        if y < 1200.0:
+            return Qt.Key.Key_4
+        if y < 1520.0:
+            return Qt.Key.Key_1
+        else:
+            return Qt.Key.Key_0
+
+    elif x < 642.0:
+        if y < 560.0:
+            return Qt.Key.Key_Slash
+        if y < 880.0:
+            return Qt.Key.Key_8
+        if y < 1200.0:
+            return Qt.Key.Key_5
+        if y < 1520.0:
+            return Qt.Key.Key_2
+        else:
+            return Qt.Key.Key_0
+
+    elif x < 962.0:
+        if y < 560.0:
+            return Qt.Key.Key_Asterisk
+        if y < 880.0:
+            return Qt.Key.Key_9
+        if y < 1200.0:
+            return Qt.Key.Key_6
+        if y < 1520.0:
+            return Qt.Key.Key_3
+        else:
+            return Qt.Key.Key_Period
+
+    else:
+        if y < 560.0:
+            return Qt.Key.Key_Minus
+        if y < 1200.0:
+            return Qt.Key.Key_Plus
+        else:
+            return Qt.Key.Key_Enter
+
+    return None
 

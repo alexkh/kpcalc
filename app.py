@@ -3,10 +3,14 @@ window_height = 922 # initial window height
 window_aspect_ratio = window_width / window_height
 
 from PyQt6.QtWidgets import QApplication, QWidget
-from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont, QKeyEvent
-from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize
+from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QStaticText, QFont, QKeyEvent, QKeySequence
+from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QEvent, QCoreApplication
 import sys
 import fragments
+
+mod_keys = [ Qt.Key.Key_Period, Qt.Key.Key_F1, Qt.Key.Key_Plus, Qt.Key.Key_F2,
+    Qt.Key.Key_Minus, Qt.Key.Key_F3, Qt.Key.Key_Asterisk, Qt.Key.Key_F4,
+    Qt.Key.Key_Slash, Qt.Key.Key_F5 ]
 
 class Canvas(QWidget):
     def __init__(self):
@@ -20,6 +24,7 @@ class Canvas(QWidget):
         self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
         self.mouse_pos = QPoint(0, 0)
+        self.mouse_key = '6'
 
         self.bg_sci = QPixmap("img/bg_sci.webp")
         self.bg_hex = QPixmap("img/bg_hex.webp")
@@ -85,7 +90,7 @@ class Canvas(QWidget):
 
         painter.setFont(QFont("Arial", int(12 * win_scale)))
         painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
-            ", " + str(self.mouse_pos.y()))
+            ", " + str(self.mouse_pos.y()) + " : " + self.mouse_key)
 
         # draw the big number:
         num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
@@ -111,6 +116,34 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, e):
         self.mouse_pos = e.pos()
         self.update()
+
+    def mousePressEvent(self, e):
+        self.mouse_pos = e.pos()
+        bg_img_scale = self.width() / fragments.imw
+        key = fragments.bg_key(self.mouse_pos, bg_img_scale)
+
+        if key in mod_keys:
+            self.mouse_key = QKeySequence(key).toString()
+            event = QKeyEvent(QEvent.Type.KeyPress, key,
+                Qt.KeyboardModifier.NoModifier)
+            QCoreApplication.postEvent(self, event)
+
+    def mouseReleaseEvent(self, e):
+        self.mouse_pos = e.pos()
+        bg_img_scale = self.width() / fragments.imw
+        key = fragments.bg_key(self.mouse_pos, bg_img_scale)
+        if key is None:
+            return
+
+        if (key in mod_keys) or (self.mod != 0):
+            event = QKeyEvent(QEvent.Type.KeyRelease, key,
+                Qt.KeyboardModifier.NoModifier)
+            QCoreApplication.postEvent(self, event)
+        else:
+            self.mouse_key = QKeySequence(key).toString()
+            event = QKeyEvent(QEvent.Type.KeyPress, key,
+                Qt.KeyboardModifier.NoModifier)
+            QCoreApplication.postEvent(self, event)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
@@ -186,6 +219,10 @@ class Canvas(QWidget):
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 if self.mod == 1:
                     self.mod = 0
+                    if '.' in self.num_str:
+                        self.update()
+                        return
+                    self.num_str += '.'
                     self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2:
