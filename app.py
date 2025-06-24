@@ -23,6 +23,8 @@ class Canvas(QWidget):
         self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
         self.num_str = "0" # number string
+        self.num_appendable = False # set to false after +, -, /, * etc pressed
+        self.eval_str = "Welcome to Keypad Calculator!" # evaluation string
 
         self.aspect_ratio = window_aspect_ratio
         self.setMouseTracking(True)
@@ -49,6 +51,15 @@ class Canvas(QWidget):
                 1.0            # full opacity
             ),
         ]
+
+    def fix_eval_str(self):
+        if self.eval_str.startswith('W'):
+            self.eval_str = ""
+
+    def clear(self): # CLEAR OPERATION when (+ C) is pressed
+        self.eval_str = ""
+        self.num_str = "0"
+        self.num_appendable = False
 
     def draw_bg(self, painter):
         bg_img_scale = self.width() / fragments.imw
@@ -86,14 +97,13 @@ class Canvas(QWidget):
                 painter.drawRect(int(42 * win_scale), int(647 * win_scale),
                     int(60 * win_scale), int(32 * win_scale))
 
-
-        painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.SolidLine))
-        painter.setFont(self.font)
-        painter.drawStaticText(5, 2, self.static_text)
-
         painter.setFont(QFont("Arial", int(12 * win_scale)))
         painter.drawText(5, 80, "" + str(self.mouse_pos.x()) +
             ", " + str(self.mouse_pos.y()) + " : " + self.mouse_key)
+
+        # draw the eval string:
+        painter.setFont(QFont("Arial", int(30 * win_scale)))
+        painter.drawText(5, 35, self.eval_str)
 
         # draw the big number:
         num_rect = QRect(int(6 * win_scale), int(50 * win_scale),
@@ -105,16 +115,17 @@ class Canvas(QWidget):
         painter.end()
 
     def num_append(self, c):
-        if self.num_str == "0":
-            if c == "0":
-                return
-            self.num_str = c
-            self.update()
-            return
-        else:
+        print("trying to append " + c)
+        if self.num_appendable:
             self.num_str += c
             self.update()
-            return
+        else:
+            if self.num_str == "0":
+                if c == "0":
+                    return
+            self.num_str = c
+            self.num_appendable = True
+            self.update()
 
     def mouseMoveEvent(self, e):
         self.mouse_pos = e.pos()
@@ -152,6 +163,7 @@ class Canvas(QWidget):
         if event.isAutoRepeat():
             return
         # print(event.key())
+        self.fix_eval_str()
         match event.key():
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 self.mod = 1
@@ -168,52 +180,62 @@ class Canvas(QWidget):
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
                 self.update()
+            case Qt.Key.Key_Enter:
+                self.eval_str += self.num_str
+                self.num_str = str(aeval(self.eval_str))
+                print("eval string: '" + self.eval_str + "' = " + self.num_str)
+                self.eval_str += '='
+                self.num_appendable = False
+                self.update()
             case Qt.Key.Key_0:
                 match self.mod:
                     case 0:
                         self.num_append("0")
+                        self.update()
             case Qt.Key.Key_1:
                 match self.mod:
                     case 0:
-                        self.num_append("1");
+                        self.num_append("1")
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
                         self.update()
             case Qt.Key.Key_2:
                 match self.mod:
                     case 0:
-                        self.num_append("2");
+                        self.num_append("2")
             case Qt.Key.Key_3:
                 match self.mod:
                     case 0:
-                        self.num_append("3");
+                        self.num_append("3")
             case Qt.Key.Key_4:
                 match self.mod:
                     case 0:
-                        self.num_append("4");
+                        self.num_append("4")
             case Qt.Key.Key_5:
                 match self.mod:
                     case 0:
-                        self.num_append("5");
+                        self.num_append("5")
             case Qt.Key.Key_6:
                 match self.mod:
                     case 0:
-                        self.num_append("6");
+                        self.num_append("6")
                     case 1:
                         self.mode = 1 if self.mode == 0 else 0
                         self.update()
             case Qt.Key.Key_7:
                 match self.mod:
                     case 0:
-                        self.num_append("7");
+                        self.num_append("7")
             case Qt.Key.Key_8:
                 match self.mod:
                     case 0:
-                        self.num_append("8");
+                        self.num_append("8")
             case Qt.Key.Key_9:
                 match self.mod:
                     case 0:
-                        self.num_append("9");
+                        self.num_append("9")
+                    case 2:
+                        self.clear();
 
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
@@ -228,8 +250,10 @@ class Canvas(QWidget):
                     self.num_str += '.'
                     self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
-                if self.mod == 2:
+                if self.mod == 2: # PLUS OPERATION
                     self.mod = 0
+                    self.eval_str += self.num_str + '+'
+                    self.num_appendable = False
                     self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3:
