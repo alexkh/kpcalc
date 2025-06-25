@@ -184,18 +184,23 @@ class Canvas(QWidget):
         match event.key():
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 self.mod = 1
+                self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 self.mod = 2
+                self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 self.mod = 3
+                self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 self.mod = 4
+                self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
+                self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Enter: # ENTER OPERATION
                 if self.show_equals: # repeated enter press: repeat last op
@@ -217,9 +222,13 @@ class Canvas(QWidget):
                     case 0:
                         self.num_append("1")
                     case 1:
-                        self.mod = 0 # prevent appending .
                         self.num_appendable = False
                         self.num_append(str(aeval("1-" + self.num_str)))
+                        self.num_appendable = False
+                    case 2:
+                        self.num_appendable = False
+                        self.num_append(str(aeval(self.num_str + "+1")))
+                        self.num_appendable = False
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
                         self.update()
@@ -268,23 +277,36 @@ class Canvas(QWidget):
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 if self.mod == 1:
                     self.mod = 0
-                    if '.' in self.num_str:
-                        self.update()
-                        return
-                    self.num_str += '.'
+                    if self.num_appendable:
+                        if '.' in self.num_str:
+                            self.update()
+                            return
+                        self.num_str += '.'
                     self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2: # PLUS OPERATION
-                    self.do_op('+')
+                    self.mod = 0
+                    if self.num_appendable:
+                        self.do_op('+')
+                    self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3: # MINUS OPERATION
-                    self.do_op('-')
+                    self.mod = 0
+                    if self.num_appendable:
+                        self.do_op('-')
+                    self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 if self.mod == 4: # MULTIPLY OPERATION
-                    self.do_op('*')
+                    self.mod = 0
+                    if self.num_appendable:
+                        self.do_op('*')
+                    self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 if self.mod == 5: # DIVIDE OPERATION
-                    self.do_op('/')
+                    self.mod = 0
+                    if self.num_appendable:
+                        self.do_op('/')
+                    self.update()
 
     def do_op(self, operation):
         self.mod = 0
