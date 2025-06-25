@@ -216,6 +216,10 @@ class Canvas(QWidget):
                 match self.mod:
                     case 0:
                         self.num_append("1")
+                    case 1:
+                        self.mod = 0 # prevent appending .
+                        self.num_appendable = False
+                        self.num_append(str(aeval("1-" + self.num_str)))
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
                         self.update()
