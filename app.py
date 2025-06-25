@@ -271,23 +271,24 @@ class Canvas(QWidget):
                     self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2: # PLUS OPERATION
-                    self.mod = 0
-                    self.eval_append(self.num_str + '+')
-                    self.num_appendable = False
-                    self.eval_appendable = True
-                    self.show_equals = False
+                    self.do_op('+')
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
-                if self.mod == 3:
-                    self.mod = 0
-                    self.update()
+                if self.mod == 3: # MINUS OPERATION
+                    self.do_op('-')
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
-                if self.mod == 4:
-                    self.mod = 0
-                    self.update()
+                if self.mod == 4: # MULTIPLY OPERATION
+                    self.do_op('*')
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
-                if self.mod == 5:
-                    self.mod = 0
-                    self.update()
+                if self.mod == 5: # DIVIDE OPERATION
+                    self.do_op('/')
+
+    def do_op(self, operation):
+        self.mod = 0
+        self.eval_append(self.num_str + operation)
+        self.num_appendable = False
+        self.eval_appendable = True
+        self.show_equals = False
+        self.update()
 
     def resizeEvent(self, event):
         # Get the new size
