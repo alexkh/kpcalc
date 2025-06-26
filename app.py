@@ -132,7 +132,10 @@ class Canvas(QWidget):
                     return
             if not self.eval_appendable:
                 self.clear()
-            self.num_str = c
+            if self.mode == 1: # in hex mode numbers start with 0x
+                self.num_str = "0x" + c
+            else:
+                self.num_str = c
             self.num_appendable = True
             self.update()
 
@@ -177,42 +180,8 @@ class Canvas(QWidget):
                 Qt.KeyboardModifier.NoModifier)
             QCoreApplication.postEvent(self, event)
 
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.isAutoRepeat():
-            return
-        # print(event.key())
-        self.fix_eval_str()
-        match event.key():
-            case Qt.Key.Key_Period | Qt.Key.Key_F1:
-                self.mod = 1
-                self.num_appendable = True
-                self.update()
-            case Qt.Key.Key_Plus | Qt.Key.Key_F2:
-                self.mod = 2
-                self.num_appendable = True
-                self.update()
-            case Qt.Key.Key_Minus | Qt.Key.Key_F3:
-                self.mod = 3
-                self.num_appendable = True
-                self.update()
-            case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
-                self.mod = 4
-                self.num_appendable = True
-                self.update()
-            case Qt.Key.Key_Slash | Qt.Key.Key_F5:
-                self.mod = 5
-                self.num_appendable = True
-                self.update()
-            case Qt.Key.Key_Enter: # ENTER OPERATION
-                if self.show_equals: # repeated enter press: repeat last op
-                    self.eval_append(re.sub(r'\d+', str(self.num_str), self.eval_str, count = 1))
-                else:
-                    self.eval_append(self.num_str)
-                self.num_str = self.ans_str = str(aeval(self.eval_str))
-                print("eval string: '" + self.eval_str + "' = " + self.num_str + " eval_appendable=" + str(self.eval_appendable))
-                self.show_equals = True
-                self.eval_appendable = False
-                self.num_appendable = False
+    def key_pressed_dec(self, key):
+        match key:
             case Qt.Key.Key_0:
                 match self.mod:
                     case 0:
@@ -343,6 +312,189 @@ class Canvas(QWidget):
                     case _:
                         self.num_appendable = False
 
+    def key_pressed_hex(self, key):
+        match key:
+            case Qt.Key.Key_0:
+                match self.mod:
+                    case 0:
+                        self.num_append("0")
+                    case 1:
+                        self.num_append("a")
+                    case 2:
+                        self.do_uop(self.ans_str)
+                    case 3:
+                        self.do_uop("-(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_1:
+                match self.mod:
+                    case 0:
+                        self.num_append("1")
+                    case 1:
+                        self.num_append("b")
+                    case 2:
+                        self.do_uop(self.num_str + "+1")
+                    case 3:
+                        self.do_uop(self.num_str + "-1")
+                    case 4:
+                        self.unit = 1 if self.unit == 0 else 0
+                        self.num_appendable = False
+                        self.update()
+                    case 5:
+                        self.do_uop("1/" + self.num_str)
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_2:
+                match self.mod:
+                    case 0:
+                        self.num_append("2")
+                    case 1:
+                        self.num_append("c")
+                    case 2:
+                        self.do_uop("2*" + self.num_str)
+                    case 3:
+                        self.do_uop(self.num_str + "/2")
+                    case 4:
+                        self.do_uop(self.num_str + "**2")
+                    case 5:
+                        self.do_uop("sqrt(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_3:
+                match self.mod:
+                    case 0:
+                        self.num_append("3")
+                    case 1:
+                        self.num_append("d")
+                    case 2:
+                        self.do_uop("3*" + self.num_str)
+                    case 3:
+                        self.do_uop(self.num_str + "/3")
+                    case 4:
+                        self.do_uop(self.num_str + "**3")
+                    case 5:
+                        self.do_uop(self.num_str + "**(1/3)")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_4:
+                match self.mod:
+                    case 0:
+                        self.num_append("4")
+                    case 1:
+                        self.num_append("e")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("sin(" + self.num_str + ")")
+                        else:
+                            self.do_uop("sin(radians(" + self.num_str + "))")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_5:
+                match self.mod:
+                    case 0:
+                        self.num_append("5")
+                    case 1:
+                        self.num_append("f")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("tan(" + self.num_str + ")")
+                        else:
+                            self.do_uop("tan(radians(" + self.num_str + "))")
+                    case 4:
+                        self.do_uop(self.num_str + "!")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_6:
+                match self.mod:
+                    case 0:
+                        self.num_append("6")
+                    case 1:
+                        self.mode = 1 if self.mode == 0 else 0
+                        self.num_appendable = False
+                        self.update()
+                    case 2:
+                        if self.num_str.startswith("0x") :
+                            self.do_uop("int(" + self.num_str + ")")
+                        else:
+                            self.do_uop("hex(int(" + self.num_str + "))")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("1/cos(" + self.num_str + ")")
+                        else:
+                            self.do_uop("1/cos(radians(" + self.num_str + "))")
+                    case 5:
+                        self.do_uop("log(" + self.num_str + ")/log(2)")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_7:
+                match self.mod:
+                    case 0:
+                        self.num_append("7")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_8:
+                match self.mod:
+                    case 0:
+                        self.num_append("8")
+                    case _:
+                        self.num_appendable = False
+            case Qt.Key.Key_9:
+                match self.mod:
+                    case 0:
+                        self.num_append("9")
+                    case 2:
+                        self.clear();
+                    case 5:
+                        self.do_uop("log(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.isAutoRepeat():
+            return
+        # print(event.key())
+        self.fix_eval_str()
+        match event.key():
+            case Qt.Key.Key_Period | Qt.Key.Key_F1:
+                self.mod = 1
+                self.num_appendable = True
+                self.update()
+            case Qt.Key.Key_Plus | Qt.Key.Key_F2:
+                self.mod = 2
+                self.num_appendable = True
+                self.update()
+            case Qt.Key.Key_Minus | Qt.Key.Key_F3:
+                self.mod = 3
+                self.num_appendable = True
+                self.update()
+            case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
+                self.mod = 4
+                self.num_appendable = True
+                self.update()
+            case Qt.Key.Key_Slash | Qt.Key.Key_F5:
+                self.mod = 5
+                self.num_appendable = True
+                self.update()
+            case Qt.Key.Key_Enter: # ENTER OPERATION
+                if self.show_equals: # repeated enter press: repeat last op
+                    self.eval_append(re.sub(r'\d+', str(self.num_str), self.eval_str, count = 1))
+                else:
+                    self.eval_append(self.num_str)
+                if self.mode == 1: # hex mode
+                    self.num_str = self.ans_str = str(
+                        aeval("hex(" + self.eval_str + ")"))
+                else:
+                    self.num_str = self.ans_str = str(aeval(self.eval_str))
+                print("eval string: '" + self.eval_str + "' = " + self.num_str + " eval_appendable=" + str(self.eval_appendable))
+                self.show_equals = True
+                self.eval_appendable = False
+                self.num_appendable = False
+            case _:
+                if self.mode == 0: # dec mode
+                    self.key_pressed_dec(event.key())
+                else:
+                    self.key_pressed_hex(event.key())
+
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
             return
@@ -350,6 +502,9 @@ class Canvas(QWidget):
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 if self.mod == 1:
                     self.mod = 0
+                    if self.mode == 1: # no dot in hex mode
+                        self.update()
+                        return
                     if self.num_appendable:
                         if '.' in self.num_str:
                             self.update()
