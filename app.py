@@ -62,8 +62,8 @@ class Canvas(QWidget):
 
     def clear(self): # CLEAR OPERATION when (+ C) is pressed, for example
         self.eval_str = ""
-        self.num_str = "0"
-        self.num_appendable = True
+        self.num_str = "0" if self.mode == 0 else "0x0"
+        self.num_appendable = False
         self.eval_appendable = False
         self.show_equals = False
 
@@ -127,13 +127,13 @@ class Canvas(QWidget):
             self.num_str += c
             self.update()
         else:
-            if self.num_str == "0":
+            if self.num_str == "0" or self.num_str == "0x0":
                 if c == "0":
                     return
             if not self.eval_appendable:
                 self.clear()
             if self.mode == 1: # in hex mode numbers start with 0x
-                self.num_str = "0x" + c
+                self.num_str = aeval("hex(" + c + ")")
             else:
                 self.num_str = c
             self.num_appendable = True
@@ -323,7 +323,7 @@ class Canvas(QWidget):
                     case 2:
                         self.do_uop(self.ans_str)
                     case 3:
-                        self.do_uop("-(" + self.num_str + ")")
+                        self.do_uop("hex(-(" + self.num_str + "))")
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_1:
