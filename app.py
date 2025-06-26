@@ -222,13 +222,9 @@ class Canvas(QWidget):
                     case 0:
                         self.num_append("1")
                     case 1:
-                        self.num_appendable = False
-                        self.num_append(str(aeval("1-" + self.num_str)))
-                        self.num_appendable = False
+                        do_uop("1-" + self.num_str)
                     case 2:
-                        self.num_appendable = False
-                        self.num_append(str(aeval(self.num_str + "+1")))
-                        self.num_appendable = False
+                        do_uop(self.num_str + "+1")
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
                         self.update()
@@ -314,6 +310,12 @@ class Canvas(QWidget):
         self.num_appendable = False
         self.eval_appendable = True
         self.show_equals = False
+        self.update()
+
+    def do_uop(self, uop):
+        self.num_appendable = False
+        self.num_append(str(aeval(uop)))
+        self.num_appendable = False
         self.update()
 
     def resizeEvent(self, event):
