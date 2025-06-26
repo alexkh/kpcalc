@@ -24,6 +24,7 @@ class Canvas(QWidget):
         self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
         self.num_str = "0" # number string
+        self.ans_str = "0" # last answer. num_str copied here when Enter pressed
         self.num_appendable = False # set to false after +, -, /, * etc pressed
         self.eval_str = "Welcome to Keypad Calculator!" # evaluation string
         self.eval_appendable = False # set to false after =
@@ -207,7 +208,7 @@ class Canvas(QWidget):
                     self.eval_append(re.sub(r'\d+', str(self.num_str), self.eval_str, count = 1))
                 else:
                     self.eval_append(self.num_str)
-                self.num_str = str(aeval(self.eval_str))
+                self.num_str = self.ans_str = str(aeval(self.eval_str))
                 print("eval string: '" + self.eval_str + "' = " + self.num_str + " eval_appendable=" + str(self.eval_appendable))
                 self.show_equals = True
                 self.eval_appendable = False
@@ -217,54 +218,130 @@ class Canvas(QWidget):
                     case 0:
                         self.num_append("0")
                         self.update()
+                    case 2:
+                        self.do_uop(self.ans_str)
+                    case 3:
+                        self.do_uop("-(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_1:
                 match self.mod:
                     case 0:
                         self.num_append("1")
                     case 1:
-                        do_uop("1-" + self.num_str)
+                        self.do_uop("1-" + self.num_str)
                     case 2:
-                        do_uop(self.num_str + "+1")
+                        self.do_uop(self.num_str + "+1")
+                    case 3:
+                        self.do_uop(self.num_str + "-1")
                     case 4:
                         self.unit = 1 if self.unit == 0 else 0
+                        self.num_appendable = False
                         self.update()
+                    case 5:
+                        self.do_uop("1/" + self.num_str)
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_2:
                 match self.mod:
                     case 0:
                         self.num_append("2")
+                    case 1:
+                        self.do_uop("e")
+                    case 2:
+                        self.do_uop("2*" + self.num_str)
+                    case 3:
+                        self.do_uop(self.num_str + "/2")
+                    case 4:
+                        self.do_uop(self.num_str + "**2")
+                    case 5:
+                        self.do_uop("sqrt(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_3:
                 match self.mod:
                     case 0:
                         self.num_append("3")
+                    case 1:
+                        self.do_uop("pi")
+                    case 2:
+                        self.do_uop("3*" + self.num_str)
+                    case 3:
+                        self.do_uop(self.num_str + "/3")
+                    case 4:
+                        self.do_uop(self.num_str + "**3")
+                    case 5:
+                        self.do_uop(self.num_str + "**(1/3)")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_4:
                 match self.mod:
                     case 0:
                         self.num_append("4")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("sin(" + self.num_str + ")")
+                        else:
+                            self.do_uop("sin(radians(" + self.num_str + "))")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_5:
                 match self.mod:
                     case 0:
                         self.num_append("5")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("tan(" + self.num_str + ")")
+                        else:
+                            self.do_uop("tan(radians(" + self.num_str + "))")
+                    case 4:
+                        self.do_uop(self.num_str + "!")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_6:
                 match self.mod:
                     case 0:
                         self.num_append("6")
                     case 1:
                         self.mode = 1 if self.mode == 0 else 0
+                        self.num_appendable = False
                         self.update()
+                    case 2:
+                        if self.num_str.startswith("0x") :
+                            self.do_uop("int(" + self.num_str + ")")
+                        else:
+                            self.do_uop("hex(int(" + self.num_str + "))")
+                    case 3:
+                        if self.unit == 0:
+                            self.do_uop("1/cos(" + self.num_str + ")")
+                        else:
+                            self.do_uop("1/cos(radians(" + self.num_str + "))")
+                    case 5:
+                        self.do_uop("log(" + self.num_str + ")/log(2)")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_7:
                 match self.mod:
                     case 0:
                         self.num_append("7")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_8:
                 match self.mod:
                     case 0:
                         self.num_append("8")
+                    case _:
+                        self.num_appendable = False
             case Qt.Key.Key_9:
                 match self.mod:
                     case 0:
                         self.num_append("9")
                     case 2:
                         self.clear();
+                    case 5:
+                        self.do_uop("log(" + self.num_str + ")")
+                    case _:
+                        self.num_appendable = False
 
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
