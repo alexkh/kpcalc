@@ -355,11 +355,9 @@ class Canvas(QWidget):
                     case 3:
                         self.do_uop(self.num_str + "-1")
                     case 4:
-                        self.unit = 1 if self.unit == 0 else 0
-                        self.num_appendable = False
-                        self.update()
+                        self.do_op(self.num_str + "&")
                     case 5:
-                        self.do_uop("1/" + self.num_str)
+                        self.do_op(self.num_str + "|")
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_2:
@@ -401,10 +399,7 @@ class Canvas(QWidget):
                     case 1:
                         self.num_append("e")
                     case 3:
-                        if self.unit == 0:
-                            self.do_uop("sin(" + self.num_str + ")")
-                        else:
-                            self.do_uop("sin(radians(" + self.num_str + "))")
+                        self.do_uop("~" + self.num_str)
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_5:
