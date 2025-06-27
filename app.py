@@ -48,12 +48,12 @@ class Canvas(QWidget):
 
         self.fragments = [
             QPainter.PixmapFragment.create(
-                QPointF(29, 555),      # target position
+                QPointF(29, 555),     # target position
                 QRectF(2, 514,        # source position (crop from center)
-                54, 82),        # source size
-                1.0, 1.0,      # scale
-                0,             # no rotation
-                1.0            # full opacity
+                54, 82),              # source size
+                1.0, 1.0,             # scale
+                0,                    # no rotation
+                1.0                   # full opacity
             ),
         ]
 
@@ -61,7 +61,7 @@ class Canvas(QWidget):
         if self.eval_str.startswith('W'):
             self.eval_str = ""
 
-    def clear(self): # CLEAR OPERATION when (+ C) is pressed, for example
+    def clear(self): # CLEAR OPERATION when (+ 9) is pressed, for example
         self.eval_str = ""
         self.num_str = "0" if self.mode == 0 else "0x0"
         self.num_appendable = False
@@ -148,7 +148,6 @@ class Canvas(QWidget):
             self.update()
 
     def eval_append(self, s):
-        print("appending " + s + " to eval. eval_appendable=" + str(self.eval_appendable))
         if self.eval_appendable:
             self.eval_str += s
             self.update()
@@ -505,7 +504,6 @@ class Canvas(QWidget):
                         aeval("hex(" + self.eval_str + ")"))
                 else:
                     self.num_str = self.ans_str = str(aeval(self.eval_str))
-                print("eval string: '" + self.eval_str + "' = " + self.num_str + " eval_appendable=" + str(self.eval_appendable))
                 self.show_equals = True
                 self.eval_appendable = False
                 self.num_appendable = False
