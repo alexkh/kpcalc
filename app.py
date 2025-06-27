@@ -23,6 +23,7 @@ class Canvas(QWidget):
         self.mode = 0 # 0 for scientific, 1 for hex
         self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
+        self.mod_used = False # modifier key has been used, not trigger operator
         self.num_str = "0" # number string
         self.ans_str = "0" # last answer. num_str copied here when Enter pressed
         self.num_appendable = False # set to false after +, -, /, * etc pressed
@@ -120,6 +121,13 @@ class Canvas(QWidget):
         painter.drawText(num_rect, Qt.AlignmentFlag.AlignRight, self.num_str)
 
         painter.end()
+
+    def do_backspace(self):
+        self.mod_used = True
+        if self.num_str == "0" or self.num_str == "0x0":
+            return
+        self.num_str = self.num_str[:-1]
+        self.update()
 
     def num_append(self, c):
         print("trying to append " + c)
@@ -314,7 +322,9 @@ class Canvas(QWidget):
                     case 0:
                         self.num_append("9")
                     case 2:
-                        self.clear();
+                        self.clear()
+                    case 3:
+                        self.do_backspace()
                     case 5:
                         self.do_uop("log(" + self.num_str + ")")
                     case _:
@@ -453,7 +463,9 @@ class Canvas(QWidget):
                     case 0:
                         self.num_append("9")
                     case 2:
-                        self.clear();
+                        self.clear()
+                    case 3:
+                        self.do_backspace()
                     case 5:
                         self.do_uop("log(" + self.num_str + ")")
                     case _:
@@ -516,37 +528,44 @@ class Canvas(QWidget):
                 if self.mod == 1:
                     self.mod = 0
                     if self.mode == 1: # no dot in hex mode
+                        self.mod_used = False
                         self.update()
                         return
-                    if self.num_appendable:
+                    if self.num_appendable and not self.mod_used:
+                        self.mod_used = False
                         if '.' in self.num_str:
                             self.update()
                             return
                         self.num_str += '.'
+                    self.mod_used = False
                     self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2: # PLUS OPERATION
                     self.mod = 0
-                    if self.num_appendable:
+                    if self.num_appendable and not self.mod_used:
                         self.do_op(self.num_str + '+')
+                    self.mod_used = False
                     self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3: # MINUS OPERATION
                     self.mod = 0
-                    if self.num_appendable:
+                    if self.num_appendable and not self.mod_used:
                         self.do_op(self.num_str + '-')
+                    self.mod_used = False
                     self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 if self.mod == 4: # MULTIPLY OPERATION
                     self.mod = 0
-                    if self.num_appendable:
+                    if self.num_appendable and not self.mod_used:
                         self.do_op(self.num_str + '*')
+                    self.mod_used = False
                     self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 if self.mod == 5: # DIVIDE OPERATION
                     self.mod = 0
-                    if self.num_appendable:
+                    if self.num_appendable and not self.mod_used:
                         self.do_op(self.num_str + '/')
+                    self.mod_used = False
                     self.update()
 
     def do_op(self, op):
