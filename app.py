@@ -252,12 +252,18 @@ class Canvas(QWidget):
                             self.do_uop("sin(" + self.num_str + ")")
                         else:
                             self.do_uop("sin(radians(" + self.num_str + "))")
+                    case 4:
+                        self.do_op(self.num_str + '**')
+                    case 5:
+                        self.do_op("100*(" + self.num_str + "/")
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_5:
                 match self.mod:
                     case 0:
                         self.num_append("5")
+                    case 2: # 2 operands required for atan2() TODO: degrees
+                        self.do_op("atan2(" + self.num_str + ',')
                     case 3:
                         if self.unit == 0:
                             self.do_uop("tan(" + self.num_str + ")")
@@ -299,6 +305,8 @@ class Canvas(QWidget):
                 match self.mod:
                     case 0:
                         self.num_append("8")
+                    case 5:
+                        self.do_op(self.num_str + '%')
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_9:
@@ -436,6 +444,8 @@ class Canvas(QWidget):
                 match self.mod:
                     case 0:
                         self.num_append("8")
+                    case 5:
+                        self.do_op(self.num_str + '%')
                     case _:
                         self.num_appendable = False
             case Qt.Key.Key_9:
@@ -480,6 +490,9 @@ class Canvas(QWidget):
                     self.eval_append(re.sub(r'\d+', str(self.num_str), self.eval_str, count = 1))
                 else:
                     self.eval_append(self.num_str)
+                # check if there is unclosed left parenthesis
+                if self.eval_str.count('(') > self.eval_str.count(')'):
+                    self.eval_str += ')'
                 if self.mode == 1: # hex mode
                     self.num_str = self.ans_str = str(
                         aeval("hex(" + self.eval_str + ")"))
@@ -515,30 +528,30 @@ class Canvas(QWidget):
                 if self.mod == 2: # PLUS OPERATION
                     self.mod = 0
                     if self.num_appendable:
-                        self.do_op('+')
+                        self.do_op(self.num_str + '+')
                     self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3: # MINUS OPERATION
                     self.mod = 0
                     if self.num_appendable:
-                        self.do_op('-')
+                        self.do_op(self.num_str + '-')
                     self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 if self.mod == 4: # MULTIPLY OPERATION
                     self.mod = 0
                     if self.num_appendable:
-                        self.do_op('*')
+                        self.do_op(self.num_str + '*')
                     self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 if self.mod == 5: # DIVIDE OPERATION
                     self.mod = 0
                     if self.num_appendable:
-                        self.do_op('/')
+                        self.do_op(self.num_str + '/')
                     self.update()
 
-    def do_op(self, operation):
+    def do_op(self, op):
         self.mod = 0
-        self.eval_append(self.num_str + operation)
+        self.eval_append(op)
         self.num_appendable = False
         self.eval_appendable = True
         self.show_equals = False
