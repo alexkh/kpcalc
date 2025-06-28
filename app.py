@@ -405,6 +405,8 @@ class Canvas(QWidget):
                         self.num_append("4")
                     case 1:
                         self.num_append("e")
+                    case 2:
+                        self.do_op(self.num_str + "^")
                     case 3:
                         self.do_uop("~" + self.num_str)
                     case _:
