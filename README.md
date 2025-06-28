@@ -44,3 +44,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 # [An interesting tutorial containing a basic FSM](https://rvunabandi.medium.com/making-a-calculator-in-javascript-64193ea6a492)
 
+# Major changes in project during development:
+* decided to drop finite state machine and instead use multi-layered states
+* decided to use asteval to do the actual calculations
+
