@@ -9,6 +9,7 @@ import sys
 import fragments
 from asteval import Interpreter
 import re
+import time
 
 aeval = Interpreter()
 
@@ -24,6 +25,7 @@ class Canvas(QWidget):
         self.unit = 0 # 0 for radians, 1 for degrees
         self.mod = 0 # active modifier: 1. 2+ 3- 4* 5/
         self.mod_used = False # modifier key has been used, not trigger operator
+        self.mod_pressed_ts = 0 # when modifier key was pressed
         self.num_str = "0" # number string
         self.ans_str = "0" # last answer. num_str copied here when Enter pressed
         self.num_appendable = False # set to false after +, -, /, * etc pressed
@@ -473,22 +475,27 @@ class Canvas(QWidget):
         match event.key():
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 self.mod = 1
+                self.mod_pressed_ts = time.time()
                 self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 self.mod = 2
+                self.mod_pressed_ts = time.time()
                 self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 self.mod = 3
+                self.mod_pressed_ts = time.time()
                 self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 self.mod = 4
+                self.mod_pressed_ts = time.time()
                 self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 self.mod = 5
+                self.mod_pressed_ts = time.time()
                 self.num_appendable = True
                 self.update()
             case Qt.Key.Key_Enter: # ENTER OPERATION
@@ -516,6 +523,9 @@ class Canvas(QWidget):
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.isAutoRepeat():
             return
+        mod_time = time.time() - self.mod_pressed_ts
+        mod_only = mod_time > 1.0
+        print("time: ", mod_time)
         match event.key():
             case Qt.Key.Key_Period | Qt.Key.Key_F1:
                 if self.mod == 1:
@@ -524,7 +534,8 @@ class Canvas(QWidget):
                         self.mod_used = False
                         self.update()
                         return
-                    if self.num_appendable and not self.mod_used:
+                    if (self.num_appendable and not self.mod_used
+                        and not mod_only):
                         self.mod_used = False
                         if '.' in self.num_str:
                             self.update()
@@ -535,28 +546,32 @@ class Canvas(QWidget):
             case Qt.Key.Key_Plus | Qt.Key.Key_F2:
                 if self.mod == 2: # PLUS OPERATION
                     self.mod = 0
-                    if self.num_appendable and not self.mod_used:
+                    if (self.num_appendable and not self.mod_used
+                        and not mod_only):
                         self.do_op(self.num_str + '+')
                     self.mod_used = False
                     self.update()
             case Qt.Key.Key_Minus | Qt.Key.Key_F3:
                 if self.mod == 3: # MINUS OPERATION
                     self.mod = 0
-                    if self.num_appendable and not self.mod_used:
+                    if (self.num_appendable and not self.mod_used
+                        and not mod_only):
                         self.do_op(self.num_str + '-')
                     self.mod_used = False
                     self.update()
             case Qt.Key.Key_Asterisk | Qt.Key.Key_F4:
                 if self.mod == 4: # MULTIPLY OPERATION
                     self.mod = 0
-                    if self.num_appendable and not self.mod_used:
+                    if (self.num_appendable and not self.mod_used
+                        and not mod_only):
                         self.do_op(self.num_str + '*')
                     self.mod_used = False
                     self.update()
             case Qt.Key.Key_Slash | Qt.Key.Key_F5:
                 if self.mod == 5: # DIVIDE OPERATION
                     self.mod = 0
-                    if self.num_appendable and not self.mod_used:
+                    if (self.num_appendable and not self.mod_used
+                        and not mod_only):
                         self.do_op(self.num_str + '/')
                     self.mod_used = False
                     self.update()
