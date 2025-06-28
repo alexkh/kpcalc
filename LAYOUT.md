@@ -1,5 +1,6 @@
 # Project files layout
 
+```
 kpcalc/
 |-------app.py           # main file
 |-------fragments.py     # file containing sizes of window elements
@@ -8,6 +9,7 @@ kpcalc/
 |-------LAYOUT.md        # this file
 |-------doc/             # documentation directory
 |-------img/             # directory containing images used by the software
+```
 
 The bulk of the code is in app.py, in the Canvas class, which is a subclass of
 QWidget. It takes care of the calculator window.
