@@ -1,6 +1,6 @@
 # Project files layout
 
-```
+```python
 kpcalc/
 |-------app.py           # main file
 |-------fragments.py     # file containing sizes of window elements
