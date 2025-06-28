@@ -314,6 +314,12 @@ class Canvas(QWidget):
                 match self.mod:
                     case 0:
                         self.num_append("8")
+                    case 2:
+                        self.num_append("e")
+                        self.mod_used = True
+                    case 3:
+                        self.num_append("-")
+                        self.mod_used = True
                     case 5:
                         self.do_op(self.num_str + '%')
                     case _:
