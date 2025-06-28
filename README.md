@@ -13,7 +13,7 @@ This is a final project for the course "Desktop GUI Applications using PyQt6.
 
 * Python 3
 * PyQt6
-# asteval
+* asteval
 
 ### Installing
 
