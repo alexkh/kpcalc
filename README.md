@@ -7,7 +7,7 @@ Featuring scientific and hexadecimal modes.
 
 This is a final project for the course "Desktop GUI Applications using PyQt6.
 
-https://wizstaff.com/kpcalc.mp4
+<video src="https://wizstaff.com/kpcalc.mp4"></video>
 
 ## Getting Started
 
@@ -49,4 +49,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 # Major changes in project during development:
 * decided to drop finite state machine and instead use multi-layered states
 * decided to use asteval to do the actual calculations
-
