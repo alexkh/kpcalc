@@ -7,6 +7,8 @@ Featuring scientific and hexadecimal modes.
 
 This is a final project for the course "Desktop GUI Applications using PyQt6.
 
+https://wizstaff.com/kpcalc.mp4
+
 ## Getting Started
 
 ### Dependencies
